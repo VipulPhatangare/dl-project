@@ -130,6 +130,30 @@ At this point HTTP should work.
 3. Admin login route:
 - `https://aichatbot.vipulphatangare.site/admin/login`
 
+## 8.1) If `/api/*` returns 404 on domain
+
+Symptom:
+- Frontend opens, but `POST https://aichatbot.vipulphatangare.site/api/admin/login` returns 404.
+
+This usually means HTTPS server block is serving static files, but `/api/` is not proxied in the **443** block.
+
+Check backend first:
+- `pm2 status`
+- `curl http://127.0.0.1:6161/api/health`
+
+If local health works, check public proxy:
+- `curl -i https://aichatbot.vipulphatangare.site/api/health`
+
+Then open Nginx site file and ensure `location /api/ { ... proxy_pass http://127.0.0.1:6161/api/; }` exists inside the **listen 443 ssl** block (not only port 80).
+
+After any Nginx change:
+- `sudo nginx -t`
+- `sudo systemctl reload nginx`
+
+Useful logs:
+- `pm2 logs aichatbot-server --lines 100`
+- `sudo tail -n 100 /var/log/nginx/error.log`
+
 ## 9) Update workflow (future deployments)
 
 From `/var/www/aichatbot`:
