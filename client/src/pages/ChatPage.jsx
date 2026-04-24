@@ -6,16 +6,28 @@ import PromptSuggestions from "../components/PromptSuggestions";
 import { useTheme } from "../context/ThemeContext";
 
 const CHAT_STORAGE_KEY = "public-chat-history";
+const createMessage = (role, content) => ({
+  id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+  role,
+  content
+});
 
 export default function ChatPage() {
   const { theme, toggleTheme } = useTheme();
   const [messages, setMessages] = useState(() => {
     const cached = localStorage.getItem(CHAT_STORAGE_KEY);
-    return cached ? JSON.parse(cached) : [];
+    if (!cached) return [];
+
+    return JSON.parse(cached).map((message) => ({
+      id: message.id || `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      role: message.role,
+      content: message.content
+    }));
   });
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState(localStorage.getItem("chat-session-id") || "");
+  const [animatingMessageId, setAnimatingMessageId] = useState("");
 
   useEffect(() => {
     localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
@@ -34,18 +46,22 @@ export default function ChatPage() {
     const question = text.trim();
     if (!question || loading) return;
 
-    const nextMessages = [...messages, { role: "user", content: question }];
+    const nextMessages = [...messages, createMessage("user", question)];
     setMessages(nextMessages);
     setInput("");
     setLoading(true);
 
     try {
       const { data } = await chatApi.ask({ sessionId, question });
+      const assistantMessage = createMessage("assistant", data.answer);
       setSessionId(data.sessionId);
-      setMessages((prev) => [...prev, { role: "assistant", content: data.answer }]);
+      setAnimatingMessageId(assistantMessage.id);
+      setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       const msg = error.response?.data?.message || "Something went wrong. Please try again.";
-      setMessages((prev) => [...prev, { role: "assistant", content: `⚠️ ${msg}` }]);
+      const assistantMessage = createMessage("assistant", `⚠️ ${msg}`);
+      setAnimatingMessageId(assistantMessage.id);
+      setMessages((prev) => [...prev, assistantMessage]);
     } finally {
       setLoading(false);
     }
@@ -90,8 +106,18 @@ export default function ChatPage() {
         {!messages.length && <ChatMessage role={welcome.role} content={welcome.content} />}
         {!messages.length && <PromptSuggestions onSelect={(prompt) => setInput(prompt)} />}
 
-        {[...messages].map((message, index) => (
-          <ChatMessage key={`${message.role}-${index}`} role={message.role} content={message.content} />
+        {[...messages].map((message) => (
+          <ChatMessage
+            key={message.id}
+            role={message.role}
+            content={message.content}
+            animate={message.id === animatingMessageId && message.role === "assistant"}
+            onAnimationDone={() => {
+              if (message.id === animatingMessageId) {
+                setAnimatingMessageId("");
+              }
+            }}
+          />
         ))}
 
         {loading && (

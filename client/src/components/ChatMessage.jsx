@@ -1,8 +1,33 @@
+import { useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-export default function ChatMessage({ role, content }) {
+export default function ChatMessage({ role, content, animate = false, onAnimationDone }) {
   const isUser = role === "user";
+  const tokens = useMemo(() => content.split(/(\s+)/).filter((token) => token.length > 0), [content]);
+  const [visibleContent, setVisibleContent] = useState(() => (animate && !isUser ? "" : content));
+
+  useEffect(() => {
+    if (isUser || !animate) {
+      setVisibleContent(content);
+      return;
+    }
+
+    setVisibleContent("");
+    let index = 0;
+    const intervalId = window.setInterval(() => {
+      index += 1;
+      const next = tokens.slice(0, index).join("");
+      setVisibleContent(next);
+
+      if (index >= tokens.length) {
+        window.clearInterval(intervalId);
+        onAnimationDone?.();
+      }
+    }, 55);
+
+    return () => window.clearInterval(intervalId);
+  }, [animate, content, isUser, onAnimationDone, tokens]);
 
   return (
     <div className={`w-full flex ${isUser ? "justify-end" : "justify-start"}`}>
@@ -17,7 +42,7 @@ export default function ChatMessage({ role, content }) {
           <p className="whitespace-pre-wrap">{content}</p>
         ) : (
           <div className="prose prose-slate dark:prose-invert max-w-none code-block">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{visibleContent}</ReactMarkdown>
           </div>
         )}
       </div>

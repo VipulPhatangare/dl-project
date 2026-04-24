@@ -12,10 +12,29 @@ import { errorHandler, notFound } from "./middleware/errorHandler.js";
 
 export const app = express();
 
+const normalizeOrigin = (value = "") => value.replace(/\/$/, "");
+const allowedOrigins = new Set(
+  [
+    env.clientUrl,
+    "http://localhost:5173",
+    "http://127.0.0.1:5173"
+  ]
+    .filter(Boolean)
+    .map(normalizeOrigin)
+);
+
 app.use(helmet());
 app.use(
   cors({
-    origin: env.clientUrl,
+    origin(origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.has(normalizeOrigin(origin))) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true
   })
 );
