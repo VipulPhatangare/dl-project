@@ -32,6 +32,7 @@ export const env = {
   geminiModel: process.env.GEMINI_MODEL || "gemini-2.5-flash",
   geminiMaxRetries: Number(process.env.GEMINI_MAX_RETRIES) || 3,
   geminiRetryBaseDelayMs: Number(process.env.GEMINI_RETRY_BASE_DELAY_MS) || 800,
+  retrievalMinScore: Number(process.env.RETRIEVAL_MIN_SCORE) || 0.45,
   clientUrl: process.env.CLIENT_URL || "http://localhost:5173",
   vectorIndexName: process.env.VECTOR_INDEX_NAME || "chunks_vector_index",
   defaultAdminEmail: process.env.DEFAULT_ADMIN_EMAIL || "admin@example.com",

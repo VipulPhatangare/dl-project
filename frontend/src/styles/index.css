@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+    "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+/* ── Scrollbars ── */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: theme("colors.slate.300") transparent;
+}
+.dark .scrollbar-thin {
+  scrollbar-color: theme("colors.slate.700") transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-slate-300 dark:bg-slate-700;
+}
+
+/* ── Code blocks ── */
+.code-block pre {
+  @apply rounded-xl p-4 bg-slate-900 text-slate-100 overflow-x-auto text-sm;
+}
+.code-block code {
+  @apply text-sm;
+}
+
+/* ── Animations ── */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+@keyframes dot-bounce {
+  0%, 80%, 100% { transform: translateY(0);    }
+  40%           { transform: translateY(-6px); }
+}
+
+.dot-1 { animation: dot-bounce 1.2s infinite 0ms;   }
+.dot-2 { animation: dot-bounce 1.2s infinite 160ms; }
+.dot-3 { animation: dot-bounce 1.2s infinite 320ms; }
+
+@keyframes sidebar-in {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0);     }
+}
+.sidebar-enter { animation: sidebar-in 220ms cubic-bezier(0.4, 0, 0.2, 1); }
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+.fade-in { animation: fade-in 180ms ease-out; }
